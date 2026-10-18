@@ -1,0 +1,22 @@
+TAVERNA DAS SOMBRAS — PWA v73
+
+Publicação gratuita pelo GitHub Pages (arquivos estáticos HTTPS):
+1. Crie um repositório público no GitHub.
+2. Envie o CONTEÚDO desta pasta à raiz do repositório (index.html, sw.js, manifest.webmanifest, icons/).
+3. Settings > Pages > Deploy from a branch; Branch: main, diretório: / (root).
+4. Após a publicação, abra a URL HTTPS fornecida pelo Pages.
+5. Android: abra no Chrome e procure 'Instalar aplicativo' no menu do navegador.
+   iPhone: Safari > Compartilhar > Adicionar à Tela de Início.
+   Desktop: Chrome/Edge > Instalar aplicativo, quando disponível.
+6. Abra uma vez online, aguarde o carregamento completo e depois confira offline.
+
+ATUALIZAÇÕES
+Substitua os arquivos publicados e altere o identificador CACHE em sw.js (ex: taverna-v73-pwa-2) a cada atualização.
+O aplicativo verifica a nova versão ao abrir online; a nova versão entra em vigor quando as janelas antigas forem fechadas. Não há troca forçada durante uma partida.
+
+AVISOS
+- O HTML original v73 não foi modificado. O index.html inclui apenas tags de instalação e registro do service worker.
+- Arquivos WAV/MP3, imagens e rádio já integrados ao HTML ficam disponíveis offline.
+- O conteúdo de um repositório público é acessível por visitantes, incluindo áudios incorporados.
+- O PWA precisa de HTTPS ou localhost; file:// abre o HTML, mas não instala o service worker.
+- iOS e navegadores variam no suporte à instalação, tela cheia e cache.
