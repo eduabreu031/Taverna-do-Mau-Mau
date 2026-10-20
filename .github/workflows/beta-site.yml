@@ -1,0 +1,88 @@
+name: Montar e publicar site BETA separado
+on:
+  push:
+    branches:
+      - beta/site-v90
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  validar_site_beta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preparar arte do icone
+        run: python -m pip install cairosvg
+      - name: Montar o HTML a partir do codigo validado
+        run: python beta/assemble_site.py
+      - name: Verificar scripts, servidor BETA e integridade PWA
+        run: |
+          node --input-type=commonjs <<'NODE'
+          const fs=require('fs'),vm=require('vm'),assert=require('assert');
+          const html=fs.readFileSync('beta/index.html','utf8');
+          assert(html.length>4e6);
+          assert(html.includes('taverna-multiplayer-beta.edulopes941.workers.dev'));
+          assert(html.includes('BETA v91'));
+          assert(html.includes('betaSpectatorBanner'));
+          const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
+          for(const [i,script] of scripts.entries())new vm.Script(script,{filename:'beta-script-'+i+'.js'});
+          assert(scripts.length>=11);
+          const manifest=JSON.parse(fs.readFileSync('beta/manifest.webmanifest','utf8'));
+          assert(manifest.name.includes('Beta'));
+          for(const icon of manifest.icons)assert(fs.statSync('beta/'+icon.src).size>1000);
+          new vm.Script(fs.readFileSync('beta/sw.js','utf8'));
+          console.log('BETA_SITE_OK',scripts.length,'scripts',manifest.icons.length,'icons');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: taverna-beta-site-v91
+          path: beta/
+          retention-days: 7
+  publicar_so_com_servidor_beta:
+    needs: validar_site_beta
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bloquear publicação até servidor BETA funcionar
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --connect-timeout 8 --max-time 18 --retry 2 \
+            https://taverna-multiplayer-beta.edulopes941.workers.dev/health > /tmp/taverna-beta-health.json
+          python - <<'PY'
+          import json
+          data=json.load(open('/tmp/taverna-beta-health.json'))
+          assert data.get('ok') is True and data.get('phase')=='cards-beta', 'Servidor errado ou não autorizado'
+          print('Servidor Beta isolado e operacional.')
+          PY
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Preparar desenho de ícone
+        run: python -m pip install cairosvg
+      - name: Publicar apenas a pasta /beta, sem alterar o site da raiz
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Taverna Beta Release"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BASE_SHA="$(git rev-parse HEAD)"
+          git fetch origin main
+          git checkout -B beta-publish origin/main
+          git checkout "$BASE_SHA" -- beta/delta_v91.json beta/assemble_site.py
+          python beta/assemble_site.py
+          git add beta/
+          if git diff --cached --quiet; then
+            echo 'Beta já publicada, sem mudanças.'
+            exit 0
+          fi
+          git commit -m "Publicar Taverna Beta v91 em /beta sem substituir o Alpha"
+          git push origin HEAD:main
