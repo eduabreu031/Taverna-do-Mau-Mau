@@ -85,3 +85,34 @@ export class TavernScene extends Phaser.Scene{
   });
  }
 }
+
+// Efeitos transitórios independentes de renderView: a animação jamais altera
+// cartas ou estado. O ID real permanece sempre no motor de regras.
+TavernScene.prototype.animateAction = function({kind,card,playerId,suit,skippedHuman=false}={}){
+ if(!this.sys.isActive())return;
+ const actorIsHuman=playerId==='voce';
+ const from=kind==='draw'?[544,352]:actorIsHuman?[640,672]:[640,150];
+ const to=kind==='draw'?[640,672]:[737,352];
+ const overlay=this.add.container(0,0).setDepth(145);
+ const play=kind==='play',draw=kind==='draw';
+ if(play||draw){
+  const tile=this.add.rectangle(from[0],from[1],91,130,draw?0x49203b:0xf3e4d1,1)
+   .setStrokeStyle(3,draw?0xe1b277:0xb88966);
+  const title=text(this,from[0],from[1],draw?'✦':`${card?.rank||''}${card?.suit||''}`,31,draw?'#e7b97e':'#5d2436',{bold:true});
+  overlay.add([tile,title]);
+  this.tweens.add({targets:[tile,title],x:to[0],y:to[1],scaleX:.88,scaleY:.88,ease:'Cubic.easeInOut',duration:420,onComplete:()=>overlay.destroy()});
+ }else if(kind==='mau'){
+  const stamp=text(this,640,360,'MAU MAU!',55,'#ffd5a8',{bold:true});overlay.add(stamp);
+  this.tweens.add({targets:stamp,alpha:0,scale:1.4,y:305,duration:1100,ease:'Cubic.easeOut',onComplete:()=>overlay.destroy()});
+ }else if(kind==='take_seven'||kind==='timeout'){
+  const stamp=text(this,640,350,kind==='timeout'?'TEMPO ESGOTADO!':'+5 CARTAS',34,'#ffb5ab',{bold:true});overlay.add(stamp);
+  this.tweens.add({targets:stamp,alpha:0,y:280,duration:1000,onComplete:()=>overlay.destroy()});
+ }else{overlay.destroy();}
+ if(play&&card){
+  const message=card.rank==='Q'?'SENTIDO INVERTIDO!':card.rank==='A'?'PULOU!':card.rank==='J'?`NAIPE ${suit||card.suit}`:card.rank==='7'?'PENALIDADE +5':card.rank==='9'?'VOLTA A JOGAR':'';
+  if(message){const label=text(this,640,290,message,31,'#ffd59b',{bold:true}).setDepth(150);
+   this.tweens.add({targets:label,alpha:0,y:240,delay:450,duration:850,onComplete:()=>label.destroy()});}
+ }
+ if(skippedHuman){const label=text(this,640,610,'PULADO!',57,'#ffb8cf',{bold:true}).setDepth(151);
+  this.tweens.add({targets:label,alpha:0,scale:1.36,y:560,delay:350,duration:1000,onComplete:()=>label.destroy()});}
+};
