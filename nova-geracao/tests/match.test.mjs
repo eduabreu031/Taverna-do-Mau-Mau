@@ -86,3 +86,24 @@ test('próxima rodada elimina maior pontuação sem reanimar IDs antigos',()=>{
  const s=game({hand:[],bot:[c('b','K','♠')],extra:{phase:'scoring',winner:'voce',scoring:{scores:[{id:'voce',points:0},{id:'bot1',points:10}],eliminated:['bot1']}}});
  const n=nextRound(s,()=>.4);assert.equal(n.phase,'finished');assert.equal(n.winner,'voce');
 });
+test('próxima rodada mantém assentos e alterna o jogador inicial, sem voltar ao primeiro',()=>{
+ const s=game({hand:[c('a','K','♣')],bot:[c('b','3','♠')],extra:{phase:'scoring',winner:'voce',starterIndex:0,
+  scoring:{scores:[{id:'voce',points:0},{id:'bot1',points:3},{id:'bot2',points:10}],eliminated:['bot2']}}});
+ s.players.push({id:'bot2',alive:true,hand:[c('x','K','♠')]});
+ const n=nextRound(s,()=>.4);
+ assert.equal(n.phase,'playing');assert.equal(n.players[2].alive,false);assert.equal(n.starterIndex,1);
+ assert.equal(n.players[n.turn].id,'bot1');assert.equal(n.players[2].hand.length,0);
+ assert.deepEqual(n.players.map(p=>p.id),['voce','bot1','bot2']);
+});
+test('próxima rodada pode voltar ao primeiro assento após passar por eliminados',()=>{
+ const s=game({hand:[c('a','K','♣')],bot:[c('b','3','♠')],extra:{phase:'scoring',winner:'bot1',starterIndex:1,
+  scoring:{scores:[{id:'voce',points:10},{id:'bot1',points:0},{id:'bot2',points:3}],eliminated:['voce']}}});
+ s.players.push({id:'bot2',alive:true,hand:[c('x','4','♠')]});
+ const n=nextRound(s,()=>.4);
+ assert.equal(n.starterIndex,2);assert.equal(n.players[n.turn].id,'bot2');
+});
+test('comprar, jogar e efeitos especiais mantêm a entrada inalterada',()=>{
+ const s=game({hand:[c('q','Q','♥'),c('x','9','♥')],top:c('t','4','♥')});
+ const snapshot=JSON.stringify(s);const n=applyAction(s,'voce','play',{cardId:'q'});
+ assert.equal(JSON.stringify(s),snapshot);assert.equal(n.players[0].hand[0].id,'x');assert.equal(s.direction,1);assert.equal(n.direction,-1);
+});
