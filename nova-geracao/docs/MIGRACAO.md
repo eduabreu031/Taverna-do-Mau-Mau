@@ -58,3 +58,11 @@
 - UI híbrida: canvas Phaser para mesa/cartas/efeitos, DOM acessível para menus/controles. A lógica do jogo não depende de nenhum dos dois.
 - Arquivos gerados proceduralmente neste laboratório são **placeholders visuais**, não substituem os assets autorais da Taverna.
 - Funções desta base não devem ser usadas como autoridade do multiplayer. O servidor já contém regras de blefe/supercombo que estão deliberadamente ausentes no protótipo.
+
+## Fundação 02 — validação do motor compilado
+
+- O HTML demonstrativo antigo é CSS/JS avulso; não é Phaser.
+- A próxima entrega usa Vite + Phaser 4.2.1 + plugin single-file e empacota dependências no HTML final.
+- O workflow CI da ramificação isolada testa o núcleo, valida sintaxe, compila e disponibiliza artefato, sem fazer deploy no GitHub Pages existente.
+- A simulação visual em Chrome Android/iOS e o controle de desempenho ainda requerem testes; não anunciar paridade com a produção.
+- Em particular permanecem pendentes: blefes e acusações OPA!!!, supercombo de duelo, reconexão, contas, salas, espectadores, votos, economia, progresso, baralhos/temas, áudio e fidelidade integral ao layout aprovado.
