@@ -1,6 +1,6 @@
 {
   "name": "taverna-nova-geracao",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,8 +8,14 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check src/core/match.js && node --check src/main.js && node --check src/scenes/TavernScene.js"
+    "check": "node --check src/core/match.js && node --check src/main.js && node --check src/scenes/TavernScene.js",
+    "verify:artifact": "node scripts/verify-singlefile.mjs"
   },
-  "dependencies": {"phaser": "4.2.1"},
-  "devDependencies": {"vite": "^6.3.0"}
+  "dependencies": {
+    "phaser": "4.2.1"
+  },
+  "devDependencies": {
+    "vite": "^6.3.0",
+    "vite-plugin-singlefile": "2.3.3"
+  }
 }
