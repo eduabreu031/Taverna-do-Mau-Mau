@@ -20,6 +20,7 @@ function update(){
  el('pass').disabled=!myTurn||(!v.drawn&&!v.pendingSeven)||busy;
  el('pass').textContent=v.pendingSeven?'Aceitar +5':'Passar';
  el('mau').disabled=!myTurn||me.hand.length!==2||!!v.mauAnnouncements[viewer]||busy;
+ el('next-round').hidden=v.phase!=='scoring';
  if(v.phase==='scoring')notify(`Rodada concluída! ${v.winner} venceu. O próximo round pode ser iniciado pela opção Nova mesa nesta prévia.`);
  else if(v.phase==='finished')notify(`${v.winner==='voce'?'Você venceu!':v.winner.replace('bot','Jogador ')+' venceu!'} A partida terminou.`);
  else notify(v.notice||'');
@@ -39,14 +40,19 @@ function scheduleCurrent(){
   const a=chooseBotAction(state,botId);dispatch(a.kind,{cardId:a.cardId,suit:a.suit});
  },3000+Math.floor(Math.random()*2001));
 }
+function wasSkipped(game,id){
+ let next=game.turn,steps=0;do{next=(next+game.direction+game.players.length)%game.players.length;if(++steps>game.players.length)return false;}while(!game.players[next].alive);return game.players[next].id===id;
+}
 function dispatch(kind,options={}){
  if(!state||busy)return;
  const playerId=state.players[state.turn].id;
  try{
-  const old=state;const next=applyAction(state,playerId,kind,options);const isHuman=playerId===viewer;
+  const old=state;const played=kind==='play'?old.players[old.turn].hand.find(c=>c.id===options.cardId):null;
+  const next=applyAction(state,playerId,kind,options);const isHuman=playerId===viewer;
   if(kind==='mau'&&isHuman){state=next;update();return;}
   cleanupTimers();state=next;selectedId=null;busy=kind==='draw'&&isHuman;
   update();
+  scene().animateAction?.({kind,card:played,playerId,suit:options.suit,skippedHuman:!isHuman&&kind==='play'&&played?.rank==='A'&&wasSkipped(old,viewer)});
   if(busy){const currentToken=token;notify('Carta comprada · animação da compra não consome seu tempo de decisão');setTimeout(()=>{if(currentToken!==token||!state)return;busy=false;update();scheduleCurrent()},450);}
   else if(kind==='mau'&&isHuman){scheduleCurrent();}
   else scheduleCurrent();
@@ -57,7 +63,11 @@ el('start').addEventListener('click',()=>{
  cleanupTimers();const n=Number(el('bot-count').value);state=createMatch([viewer,...Array.from({length:n},(_,i)=>`bot${i+1}`)]);
  selectedId=null;busy=false;el('welcome').hidden=true;update();scheduleCurrent();
 });
-el('new-game').addEventListener('click',()=>{cleanupTimers();state=null;busy=false;selectedId=null;el('welcome').hidden=false;el('clock').textContent='';scene().setView(null,null,null);el('turn-label').textContent='Mesa ainda não iniciada';notify('Inicie uma mesa para explorar a nova base.');});
+el('next-round').addEventListener('click',()=>{
+ if(!state||state.phase!=='scoring')return;
+ cleanupTimers();try{state=nextRound(state);selectedId=null;busy=false;update();scheduleCurrent();}catch(err){notify(err.message);}
+});
+el('new-game').addEventListener('click',()=>{cleanupTimers();state=null;busy=false;selectedId=null;el('welcome').hidden=false;el('clock').textContent='';scene().setView(null,null,null);el('next-round').hidden=true;el('turn-label').textContent='Mesa ainda não iniciada';notify('Inicie uma mesa para explorar a nova base.');});
 el('draw').addEventListener('click',()=>dispatch('draw'));
 el('mau').addEventListener('click',()=>dispatch('mau'));
 el('pass').addEventListener('click',()=>dispatch(state?.pendingSeven?'take_seven':'pass'));
