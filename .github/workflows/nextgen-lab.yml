@@ -1,0 +1,41 @@
+name: Taverna Nova Geração - laboratório (sem deploy)
+on:
+  push:
+    branches:
+      - 'nova-geracao/fundacao-01'
+    paths:
+      - 'nova-geracao/**'
+      - '.github/workflows/nextgen-lab.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-and-bundle:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nova-geracao
+    steps:
+      - name: Buscar código isolado
+        uses: actions/checkout@v4
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar dependências do laboratório
+        run: npm install --no-audit --no-fund
+      - name: Testar núcleo offline
+        run: npm test
+      - name: Validar sintaxe
+        run: npm run check
+      - name: Compilar Phaser em HTML único
+        run: npm run build
+      - name: Verificar HTML sem dependências locais
+        run: npm run verify:artifact
+      - name: Disponibilizar HTML como artefato (sem publicação)
+        uses: actions/upload-artifact@v4
+        with:
+          name: taverna-phaser-lab-android
+          path: nova-geracao/dist/index.html
+          if-no-files-found: error
+          retention-days: 30
