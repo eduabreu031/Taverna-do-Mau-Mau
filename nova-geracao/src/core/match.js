@@ -19,7 +19,7 @@ export function createMatch(playerIds,rng=Math.random){
  const deck=freshDeck(playerIds.length,rng),players=playerIds.map(id=>({id,alive:true,hand:deck.splice(0,5)}));
  const index=deck.findIndex(c=>!['A','7','J','Q'].includes(c.rank));if(index<0)throw Error('Sem descarte inicial');
  const [first]=deck.splice(index,1);
- return {players,deck,discard:[first],turn:0,direction:1,activeSuit:first.suit,drawn:false,pendingSeven:0,mauAnnouncements:{},phase:'playing',winner:null,round:1,revision:1,notice:'Mesa aberta'};
+ return {players,deck,discard:[first],turn:0,direction:1,activeSuit:first.suit,drawn:false,pendingSeven:0,mauAnnouncements:{},phase:'playing',winner:null,round:1,starterIndex:0,revision:1,notice:'Mesa aberta'};
 }
 function advance(s,skip=0){
  let pos=s.turn;
@@ -96,7 +96,9 @@ export function nextRound(before,rng=Math.random){
  const deck=freshDeck(s.players.length,rng);s.players.forEach(p=>{p.hand=p.alive?deck.splice(0,5):[]});
  const ix=deck.findIndex(c=>!['A','7','J','Q'].includes(c.rank));const [first]=deck.splice(ix,1);
  s.deck=deck;s.discard=[first];s.activeSuit=first.suit;s.direction=1;s.pendingSeven=0;s.drawn=false;s.mauAnnouncements={};s.round++;
- s.turn=s.players.findIndex(p=>p.alive);s.phase='playing';s.scoring=null;s.winner=null;s.revision++;s.notice=`Rodada ${s.round}`;return s;
+ let starter=Number.isInteger(s.starterIndex)?s.starterIndex:0;
+ do{starter=(starter+1)%s.players.length;}while(!s.players[starter].alive);
+ s.starterIndex=starter;s.turn=starter;s.phase='playing';s.scoring=null;s.winner=null;s.revision++;s.notice=`Rodada ${s.round}`;return s;
 }
 export function viewFor(s,viewerId){
  return {phase:s.phase,revision:s.revision,round:s.round,winner:s.winner,scoring:s.scoring||null,turnPlayerId:s.players[s.turn].id,direction:s.direction,activeSuit:s.activeSuit,top:s.discard.at(-1),deckCount:s.deck.length,players:s.players.map(p=>({id:p.id,alive:p.alive,count:p.hand.length})),hand:s.players.find(p=>p.id===viewerId)?.hand.slice()||[],drawn:s.drawn,pendingSeven:s.pendingSeven,mauAnnouncements:{...s.mauAnnouncements},notice:s.notice};
