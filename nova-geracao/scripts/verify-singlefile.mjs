@@ -1,0 +1,11 @@
+import {readFileSync,existsSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const f='dist/index.html';
+assert.ok(existsSync(f),'A compilação não gerou dist/index.html');
+const html=readFileSync(f,'utf8');
+assert.ok(html.length>200000,'O motor Phaser não parece estar embutido');
+assert.match(html,/<script\b[^>]*>[\s\S]+<\/script>/i,'JavaScript ausente');
+assert.match(html,/<style\b[^>]*>[\s\S]+<\/style>/i,'CSS ausente');
+assert.ok(!/<(?:script|link)\b[^>]*(?:src|href)=["'](?:\.?\.?\/|https?:\/\/)/i.test(html),'Arquivo depende de script ou estilo externo');
+assert.ok(!/<script[^>]+src=/i.test(html),'Dependência externa de script');
+console.log(`HTML único verificado: ${Math.round(html.length/1024)} KiB, sem scripts/estilos externos.`);
