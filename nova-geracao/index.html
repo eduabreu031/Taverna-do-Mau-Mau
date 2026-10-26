@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#190a13"><meta name="description" content="Laboratório isolado de reconstrução da Taverna do Mau Mau">
+<title>Taverna do Mau Mau — Nova Geração</title>
+</head>
+<body>
+<div class="app">
+<header class="masthead"><div><span class="eyebrow">LABORATÓRIO · NOVA GERAÇÃO</span><h1>Taverna do Mau Mau</h1></div><div class="masthead-right"><span class="prototype-pill">PROTÓTIPO OFFLINE</span><span id="turn-label">Mesa ainda não iniciada</span></div></header>
+<main class="stage"><div id="game" role="img" aria-label="Mesa da Taverna do Mau Mau com cartas e jogadores"></div>
+<div id="welcome" class="welcome"><div class="welcome-inner"><div class="badge-art">♠ ♥ ♦ ♣</div><span class="eyebrow">A mesma Taverna, uma nova tecnologia</span><h2>Bem-vindo à Taverna</h2><p>Primeira fundação gráfica com Phaser 4. A lógica completa, Crônicas e multiplayer serão migrados em etapas, sem tocar no jogo publicado.</p><label for="bot-count">Adversários de teste</label><select id="bot-count"><option value="1">1 bot · duelo</option><option value="4" selected>4 bots · mesa cheia de detalhes</option><option value="9">9 bots · capacidade máxima</option></select><button type="button" id="start">ABRIR A MESA</button></div></div>
+<div id="suit-dialog" class="suit-dialog" hidden><div class="suit-panel"><p>Escolha o naipe do Valete</p><div id="suit-options" class="suit-options"><button type="button" data-suit="♠">♠</button><button type="button" data-suit="♥">♥</button><button type="button" data-suit="♦">♦</button><button type="button" data-suit="♣">♣</button></div><button type="button" id="cancel-suit" class="small">Voltar</button></div></div>
+</main>
+<footer class="controls"><div class="status-group"><span id="status-text" aria-live="polite">Inicie uma mesa para explorar a nova base.</span><span id="clock" aria-live="off"></span></div><div class="button-group"><button id="mau" disabled>MAU MAU!</button><button id="draw" disabled>Comprar</button><button id="play" disabled>Jogar carta</button><button id="pass" disabled>Passar</button><button id="new-game">Nova mesa</button></div></footer>
+<div class="disclaimer">Versão de engenharia separada. Partidas, contas, conquistas e salas da versão publicada não são acessadas por este laboratório.</div>
+</div><script type="module" src="/src/main.js"></script>
+</body></html>
